@@ -2,6 +2,6 @@
 Used for develop project in qualcomm platform
 
 ## CDSP
-   SNPE
-   Halide
+   &nbsp;&nbsp;SNPE</br>
+   &nbsp;&nbsp;Halide
 ## Adreno GPU
