@@ -1,0 +1,35 @@
+
+
+# binary names
+DLL_NAME=libcorner_detect
+EXE_NAME=corner_detect
+
+UTILS_DIR=$(HEXAGON_SDK_ROOT)/utils/examples
+
+BUILD_DLLS += $(DLL_NAME)
+
+$(DLL_NAME)_QAICIDLS += \
+   inc/corner_detect
+
+$(DLL_NAME)_C_SRCS += \
+  $(OBJ_DIR)/corner_detect_stub
+
+$(DLL_NAME)_DLLS += $(LIB_DSPRPC)
+
+# stand-alone corner-detection executable
+BUILD_EXES += $(EXE_NAME)
+
+$(EXE_NAME)_QAICIDLS += \
+ inc/corner_detect
+
+$(EXE_NAME)_C_SRCS += src/corner_detect \
+                $(UTILS_DIR)/dsp_capabilities_utils
+
+$(EXE_NAME)_DEFINES += VERIFY_PRINT_ERROR
+
+# copy final build products to the ship directory
+BUILD_COPIES += \
+   $(DLLS) \
+   $(EXES) \
+   $(LIBS) \
+   $(SHIP_DIR)/ ;

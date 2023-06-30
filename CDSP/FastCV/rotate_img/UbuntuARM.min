@@ -1,0 +1,10 @@
+include $(HEXAGON_SDK_ROOT)/build/lib_dsprpc.min
+$(info ************  LIB=$(LIB_DSPRPC) ************)
+
+include cpu.min
+
+
+
+$(EXE_NAME)_LIBS += rpcmem
+$(EXE_NAME)_DLLS += libcorner_detect \
+                $(LIB_DSPRPC)

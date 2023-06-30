@@ -1,0 +1,70 @@
+-- package description
+
+local root = 'p4://qctp406/source/qcom/qct/platform/adsp'
+local proj = root .. '/proj'
+local md = require (root .. '/buildtools/pakman/libs/mdlib.lua')
+
+local v = md.params(params)
+local target = assert( v:match("^(%w+)_"), v )
+
+local incs = {
+   proj .. '/inc/HAP',
+   proj .. '/remote',
+   proj .. '/inc/stddef',
+   proj .. '/rpcmem',
+   DSPCV = 'p4://aswp401/source/qcom/qct/multimedia2/fastcv/src/qdsp6/dyn_fwk/dspCV/pak',
+}
+
+if target:match("hexagon") then
+   table.insert(incs, proj .. '/test_util')
+   table.insert(incs, proj .. '/apps_mem_heap')
+   if v:match("v50") or v:match("v64") then
+     table.insert(incs, 'p4://aswp401/source/qcom/qct/multimedia2/fastcv/sandbox/sdk_rel/2.0.01')
+   else
+     table.insert(incs, 'p4://aswp401/source/qcom/qct/multimedia2/fastcv/sandbox/sdk_rel/3.4.2')
+   end
+end
+
+local libs = {
+   proj .. '/remote',
+   proj .. '/rpcmem',
+   proj .. '/atomic',
+   proj .. '/inc/HAP',
+   'p4://aswp401/source/qcom/qct/multimedia2/fastcv/src/qdsp6/dyn_fwk/dspCV/pak',
+}
+
+if target:match("android") or target:match("UbuntuARM") then
+   table.insert(incs, proj .. '/adspmsgd')
+   table.insert(libs, proj .. '/adspmsgd')
+end
+
+if target:match("hexagon") then
+   table.insert(libs, proj .. '/test_main')
+   table.insert(libs, proj .. '/test_util')
+   table.insert(libs, proj .. '/atomic')
+   table.insert(libs, proj .. '/apps_mem_heap')
+   if v:match("v50") or v:match("v64") then
+     table.insert(libs, 'p4://aswp401/source/qcom/qct/multimedia2/fastcv/sandbox/sdk_rel/2.0.01')
+   else
+     table.insert(libs, 'p4://aswp401/source/qcom/qct/multimedia2/fastcv/sandbox/sdk_rel/3.4.2')
+   end
+end
+
+local deps = { 
+   QURT_IMAGE_DIR = root .. '/device/qurt_install',
+}
+
+--package with make extensions for our targets
+local pkg = md.cPackage {
+   params     = params,
+   incdirs    = incs,
+   libdirs    = libs,
+   deps       = deps,
+   extensions = { root .. '/mk/hexagon', 
+                  root .. '/mk/android', 
+                  root .. '/mk/UbuntuARM', 
+                  root .. '/mk/qaic', 
+                },
+}
+
+return pkg

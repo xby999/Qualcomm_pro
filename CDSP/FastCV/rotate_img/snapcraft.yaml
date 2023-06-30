@@ -1,0 +1,98 @@
+name: qti-compute-cornerdetectapp
+base: core20
+version: '0.1'
+summary: Application to offload computations to DSPs
+description: Compute corner detect application offloading to DSPs.
+
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: strict # use 'strict' once you have the right plugs and slots
+
+
+apps:
+  testapp:
+    command: usr/bin/corner_detect
+    environment:
+            ADSP_LIBRARY_PATH: $SNAP/usr/lib/rfsa/adsp;$SNAP/dsp;$SNAP/usr/local/lib/rfsa/adsp
+            LD_LIBRARY_PATH: $SNAP/usr/shared-lib
+
+plugs:
+  ion:
+    interface: system-files
+    write:
+     - /dev/ion
+  adsprpc-smd:
+    interface: system-files
+    write:
+     - /dev/adsprpc-smd
+  dspso:
+    interface: content
+    content: lib-dspso
+    target: $SNAP/dsp
+  fastrpc:
+    interface: content
+    content: lib-fastrpc
+    target: $SNAP/usr/shared-lib
+
+
+parts:
+  cornerdetect-app:
+    plugin: dump
+    source: .
+    source-type: local
+    override-pull: |
+        # allow custom source definition
+          if [ -n "${HLOS_APP_PREBUILTS_PATH:-}" ]; then
+            if [ -d ${HLOS_APP_PREBUILTS_PATH} ]; then
+              cp -r ${HLOS_APP_PREBUILTS_PATH}/* ${SNAPCRAFT_PART_SRC}
+            else
+              echo "Error: Its not a directory, please check the path"
+            fi
+          else
+            echo "Error:Missing env HLOS_APP_PREBUILTS_PATH , no HLOS app prebuilts path provided"
+            exit 1;
+          fi
+    override-build: |
+        snapcraftctl build
+        chmod -R 777 corner_detect
+    organize:
+        corner_detect : /usr/bin/corner_detect
+        libcorner_detect.so : /usr/lib/libcorner_detect.so
+    after:
+       - qti-fastcv
+       - cornerdetect-skel
+  qti-fastcv:
+    plugin: dump
+    source: .
+    source-type: local
+    override-pull: |
+        # allow custom source definition
+          if [ -n "${FASTCV_TAR_PATH:-}" ]; then
+            if [ -d ${FASTCV_TAR_PATH} ]; then
+              tar -xvf ${FASTCV_TAR_PATH}/qti-fastcv.tar --directory ${SNAPCRAFT_PART_SRC}
+            else
+              echo "Error: Its not a directory, please check the path"
+            fi
+          else
+            echo "Error:Missing env FASTCV_TAR_PATH , no HLOS app prebuilts path provided"
+            exit 1;
+          fi
+  cornerdetect-skel:
+    plugin: dump
+    source: .
+    source-type: local
+    override-pull: |
+        # allow custom source definition
+          if [ -n "${HEXAGON_DSP_PREBUILTS_PATH:-}" ]; then
+            if [ -d ${HEXAGON_DSP_PREBUILTS_PATH} ]; then
+              cp -r ${HEXAGON_DSP_PREBUILTS_PATH}/* ${SNAPCRAFT_PART_SRC}
+            else
+              echo "Error: Its not a directory, please check the path"
+            fi
+          else
+            echo "Error: Missing env HEXAGON_DSP_PREBUILTS_PATH , no hexagon prebuilts path provided"
+            exit 1;
+          fi
+    organize:
+      libcorner_detect_skel.so : usr/lib/rfsa/adsp/
+    prime:
+      - usr/lib/rfsa/adsp/

@@ -1,0 +1,23 @@
+# only build the shared object if dynamic option specified in the variant
+BUILD_DLLS += libcorner_detect_skel
+
+
+# compile flags needed to build the shared lib. This flag required when project includes fastcv.h
+DEFINES += FASTCV_NO_INLINE_FUNCTIONS \
+
+DEFINES+=_MACH_I32=int
+
+# IDL files needed to generate skels and/or headers visible to the shared lib
+libcorner_detect_skel_QAICIDLS += inc/corner_detect
+
+# .c files to build into the shared lib
+libcorner_detect_skel_C_SRCS += $(OBJ_DIR)/corner_detect_skel \
+                            src/corner_detect_imp \
+
+
+# copy final build products to the ship directory
+BUILD_COPIES += \
+   $(DLLS) \
+   $(EXES) \
+   $(LIBS) \
+   $(SHIP_DIR)/ ;
